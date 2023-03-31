@@ -37,20 +37,20 @@ public class TerminMonitor {
         try {
             URL url = new URL(LINK + peopleCount);
             String content = new Scanner(url.openStream(), StandardCharsets.UTF_8).useDelimiter("\\A").next();
-            List<Termin> termins = getTermins(content);
+            List<Termin> termins = parse(content);
             System.out.println(LocalDateTime.now().format(FORMATTER) + " : " + processTermins(termins));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private static List<Termin> getTermins(String content) {
+    private static List<Termin> parse(String content) {
         return Arrays.stream(content.split("\n"))
                 .filter(string -> string.contains(FILTER))
-                .map(s -> {
-                    Termin termin = new Termin(s);
-                    System.out.println(termin);
-                    return termin;
+                .flatMap(s -> {
+                    List<Termin> termins = parse(s);
+                    System.out.println(termins);
+                    return termins.stream();
                 })
                 .filter(termin -> termin.isBetween(FROM, TO))
                 .collect(Collectors.toList());

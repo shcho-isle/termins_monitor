@@ -4,6 +4,8 @@ import org.apache.commons.text.StringEscapeUtils;
 
 import java.time.MonthDay;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class Termin {
@@ -12,18 +14,24 @@ public class Termin {
 
     private final MonthDay monthDay;
 
-    public Termin(String s) {
+    public static List<Termin> parse(String s) {
+        List<Termin> result = new ArrayList<>();
+
         String s1 = cutPrefix(s, "colspan=\"7\">");
         String month = StringEscapeUtils.unescapeHtml4(cutSuffix(s1, " "));
 
-        String s2 = cutPrefix(cutPrefix(s, "<td class=\"monatevent\">"), ">");
-        String day = cutSuffix(s2, "<");
+        String[] split = s.split("<td class=\"monatevent\">");
+        for (int i = 1; i < split.length; i++) {
+            String s2 = cutPrefix(split[i], ">");
+            String day = cutSuffix(s2, "<");
+            result.add(new Termin(day, month));
+        }
 
-        this.monthDay = MonthDay.parse(day + " " + month, TERMIN_FORMATTER);
+        return result;
     }
 
-    public MonthDay getMonthDay() {
-        return monthDay;
+    public Termin(String day, String month) {
+        this.monthDay = MonthDay.parse(day + " " + month, TERMIN_FORMATTER);
     }
 
     public boolean isBetween(MonthDay from, MonthDay to) {
