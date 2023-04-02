@@ -3,4 +3,3 @@ out
 target
 *.iml
 src/main/resources/settings
-/src/main/java/experiments/

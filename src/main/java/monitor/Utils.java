@@ -24,6 +24,14 @@ public class Utils {
         }
     }
 
+    public static String cutPrefix(String s, String prefix) {
+        return s.substring(s.indexOf(prefix) + prefix.length());
+    }
+
+    public static String cutSuffix(String s, String suffix) {
+        return s.substring(0, s.indexOf(suffix));
+    }
+
     public static void sendEmail(String text) {
         Session session = getSession();
         try {

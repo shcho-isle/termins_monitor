@@ -1,5 +1,7 @@
 package monitor;
 
+import org.apache.commons.text.StringEscapeUtils;
+
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -7,11 +9,15 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.MonthDay;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static monitor.Utils.cutPrefix;
+import static monitor.Utils.cutSuffix;
 
 public class TerminMonitor {
     private static final String LINK = "https://tempus-termine.com/termine/index.php?anr=107&anwendung=2&schlangen=6&sna=Ta60b82812195da3c8bfe8c5b56c475dd&action=open&page=tagesauswahl&tasks=6466&kuerzel=AEHumanita&standortrowid=318&standortanzahl=";
@@ -28,32 +34,51 @@ public class TerminMonitor {
         System.out.println("For " + peopleCount + " people: ");
 
         while (true) {
-            pingAvaliableTermins();
+            List<Termin> termins = getTermins();
+            String result = processTermins(termins);
+
+            System.out.println(LocalDateTime.now().format(FORMATTER) + " : " + result);
+
             TimeUnit.SECONDS.sleep(PING_PERIOD);
         }
     }
 
-    private static void pingAvaliableTermins() {
+    private static List<Termin> getTermins() {
         try {
             URL url = new URL(LINK + peopleCount);
             String content = new Scanner(url.openStream(), StandardCharsets.UTF_8).useDelimiter("\\A").next();
-            List<Termin> termins = parse(content);
-            System.out.println(LocalDateTime.now().format(FORMATTER) + " : " + processTermins(termins));
+            return parseContent(content);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
-    private static List<Termin> parse(String content) {
+    private static List<Termin> parseContent(String content) {
         return Arrays.stream(content.split("\n"))
                 .filter(string -> string.contains(FILTER))
-                .flatMap(s -> {
-                    List<Termin> termins = parse(s);
+                .flatMap(string -> {
+                    List<Termin> termins = parseString(string);
                     System.out.println(termins);
                     return termins.stream();
                 })
                 .filter(termin -> termin.isBetween(FROM, TO))
                 .collect(Collectors.toList());
+    }
+
+    private static List<Termin> parseString(String s) {
+        List<Termin> result = new ArrayList<>();
+
+        String s1 = cutPrefix(s, "colspan=\"7\">");
+        String month = StringEscapeUtils.unescapeHtml4(cutSuffix(s1, " "));
+
+        String[] split = s.split("<td class=\"monatevent\">");
+        for (int i = 1; i < split.length; i++) {
+            String s2 = cutPrefix(split[i], ">");
+            String day = cutSuffix(s2, "<");
+            result.add(new Termin(day, month));
+        }
+
+        return result;
     }
 
     private static String processTermins(List<Termin> termins) {
