@@ -9,7 +9,7 @@ import java.util.Properties;
 
 public class Utils {
 
-    private static Properties personalData;
+    private static final Properties personalData;
 
     static {
         String personalDataPath = TerminMonitor.class.getClassLoader().getResource("hidden").getPath()

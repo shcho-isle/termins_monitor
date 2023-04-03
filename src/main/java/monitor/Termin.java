@@ -4,6 +4,8 @@ import java.time.MonthDay;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
+import static java.util.Objects.isNull;
+
 public class Termin {
 
     private static final DateTimeFormatter TERMIN_FORMATTER = DateTimeFormatter.ofPattern("d MMMM", Locale.GERMAN);
@@ -15,7 +17,7 @@ public class Termin {
     }
 
     public boolean isBetween(MonthDay from, MonthDay to) {
-        return monthDay.isAfter(from) && monthDay.isBefore(to);
+        return (isNull(from) || monthDay.isAfter(from)) && (isNull(to) || monthDay.isBefore(to));
     }
 
     @Override
