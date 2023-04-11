@@ -62,6 +62,7 @@ public class Utils {
         properties.put("mail.smtp.auth", "true");
 
         return Session.getInstance(properties, new Authenticator() {
+            @Override
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(
                         personalData.getProperty("gmail.user.name"),

@@ -80,11 +80,11 @@ public class TerminMonitor {
     }
 
     private static String processTermins(List<Termin> termins) {
-        if (!termins.isEmpty()) {
-            Utils.sendEmail("For " + peopleCount + " people: " + termins);
-            return termins.toString();
-        } else {
-            return "nothing";
+        if (termins.isEmpty()) {
+            return "termins are missing or filtered";
         }
+
+        Utils.sendEmail("For " + peopleCount + " people: " + termins);
+        return termins.toString();
     }
 }
